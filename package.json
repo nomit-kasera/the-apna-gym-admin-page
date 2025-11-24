@@ -6,12 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "format": "eslint --fix . && prettier '**/*.{json,yaml}' --write --ignore-path .gitignore"
   },
   "dependencies": {
+    "@chakra-ui/card": "^2.2.0",
+    "@chakra-ui/input": "^2.1.2",
+    "@chakra-ui/modal": "^2.3.1",
+    "@chakra-ui/react": "^3.30.0",
+    "@chakra-ui/select": "^2.1.2",
+    "@chakra-ui/table": "^2.1.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "axios": "^1.13.2",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.554.0",
     "next": "16.0.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "use-sync-external-store": "^1.6.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
