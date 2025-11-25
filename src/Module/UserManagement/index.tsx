@@ -22,6 +22,7 @@ import { InputGroup, InputLeftElement } from "@chakra-ui/input";
 import { Select } from "@chakra-ui/select";
 import { dashboardApiClient, Member } from "../DashboardServices/dashboardApiClient";
 import Loader from "@/Components/Loader";
+import { toast } from "react-toastify";
 
 const tableColumns = [
     "Name",
@@ -58,7 +59,6 @@ export default function UserManagement() {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-
     const isMobile = useBreakpointValue({ base: true, md: false });
 
     const handleAddUser = async (e: React.FormEvent) => {
@@ -83,6 +83,7 @@ export default function UserManagement() {
                         end_date: formData.end_date,
                     }
                 }, editingUser.documentId ?? "")
+                toast.success("User updated successfully!");
                 getMembersData();
                 setEditingUser(null);
             } else {
@@ -101,6 +102,7 @@ export default function UserManagement() {
                     membership_status: "active",
                     membership_type: formData.membership_type
                 };
+                toast.success("User added successfully!");
                 setUsers([newUser, ...users]);
             }
 
@@ -153,9 +155,10 @@ export default function UserManagement() {
             try {
                 const response = await dashboardApiClient.deleteMember(deletingUserId);
                 setUsers(users.filter((u) => u?.documentId !== deletingUserId));
+                toast.success("User deleted successfully!");
                 closeConfirmDialog();
             } catch (err: any) {
-
+                toast.error("Failed to delete user!");
             } finally {
                 setIsPageLoading(false);
             }
@@ -822,17 +825,17 @@ export default function UserManagement() {
             </VStack>
 
             {/* Delete Confirmation Modal */}
-            <Modal isOpen={isConfirmOpen} onClose={closeConfirmDialog} isCentered>
+            <Modal isOpen={isConfirmOpen} onClose={closeConfirmDialog}>
                 <ModalOverlay bg="blackAlpha.700" sx={{ backdropFilter: "blur(6px)" }} />
                 <ModalContent
                     bg="rgba(15,23,42,0.98)"
                     borderWidth="1px"
                     borderColor="#ef4b6e"
-                    width={"50%"}
+                    width={["100%"]}
                     borderRadius={8}
                     padding={10}
-                    top={100}
-                    left={500}
+                    top={300}
+                    // left={500}
                 >
                     <ModalHeader>
                         <Flex align="center" gap={2} color="white">

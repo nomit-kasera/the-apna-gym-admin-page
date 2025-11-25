@@ -4,18 +4,17 @@ import React, { useState } from "react";
 import { Box, Flex, Heading, Text, Input, Button, VStack, Image } from "@chakra-ui/react";
 import { dashboardApiClient } from "../DashboardServices/dashboardApiClient";
 import useUserStore from "@/stores/useUserStore"
-import { useToast } from "@chakra-ui/toast";
 import * as AuthUtils from "@/utils/AuthUtils";
 import { useRouter } from "next/router";
 import { Paths } from "@/constant/paths";
 import Loader from "@/Components/Loader";
+import { toast } from "react-toastify";
 
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const toast = useToast();
     const { setAuthenticated, setToken, setUserProfile } = useUserStore();
     const router = useRouter();
     const [isPageLoading, setIsPageLoading] = useState(false);
@@ -44,7 +43,7 @@ export default function LoginPage() {
                 identifier: email,
                 password: password,
             });
-
+            toast.success("Logged in successfully!");
             const profileObject: AuthUtils.ProfileObject = {
                 name: response.user.username,
                 email: response.user.email,
@@ -70,22 +69,10 @@ export default function LoginPage() {
                 router.push(referredFrom as string);
                 return;
             }
-            toast({
-                title: "Success",
-                description: "Login successful",
-                status: "success",
-                duration: 4000
-            });
             router.push(`${Paths.home}`);
         } catch (err: any) {
             setIsPageLoading(false)
-            toast({
-                title: "Auth Error",
-                description: err.message,
-                status: "error",
-                duration: 4000,
-                isClosable: true,
-            });
+            toast.error("Login failed");
         } finally {
             setIsPageLoading(false)
         }
