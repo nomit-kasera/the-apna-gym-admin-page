@@ -21,6 +21,7 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter 
 import { InputGroup, InputLeftElement } from "@chakra-ui/input";
 import { Select } from "@chakra-ui/select";
 import { dashboardApiClient, Member } from "../DashboardServices/dashboardApiClient";
+import Loader from "@/Components/Loader";
 
 const tableColumns = [
     "Name",
@@ -39,14 +40,16 @@ export default function UserManagement() {
     const [showForm, setShowForm] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [editingUser, setEditingUser] = useState<Member | null>(null);
-    const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
+    const [deletingUserId, setDeletingUserId] = useState<string | "">("");
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(false);
+
 
     const [formData, setFormData] = useState({
         full_name: "",
         email: "",
         phone_number: "",
-        membership_type: "",
+        membership_type: "monthly" as "monthly" | "quarterly" | "yearly",
         start_date: "",
         end_date: "",
         membership_status: "active"
@@ -58,7 +61,7 @@ export default function UserManagement() {
 
     const isMobile = useBreakpointValue({ base: true, md: false });
 
-    const handleAddUser = (e: React.FormEvent) => {
+    const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!formData.full_name || !formData.email || !formData.phone_number || !formData.end_date) {
@@ -66,29 +69,58 @@ export default function UserManagement() {
             return;
         }
 
-        if (editingUser) {
-            // setUsers(users.map((u) => (u.id === editingUser.id ? { ...editingUser, ...formData } : u)));
-            setEditingUser(null);
-        } else {
-            const newUser: Member = {
-                id: Math.max(...users.map((u) => u.id), 0) + 1,
-                ...formData,
+        try {
+            setIsPageLoading(true);
+            if (editingUser) {
+                // setUsers(users.map((u) => (u.documentId === editingUser.documentId ? { ...editingUser, ...formData } : u)));
+                const response = await dashboardApiClient.updateMember({
+                    data: {
+                        full_name: formData.full_name,
+                        email: formData.email,
+                        phone_number: formData.phone_number,
+                        membership_type: formData.membership_type,
+                        start_date: formData.start_date,
+                        end_date: formData.end_date,
+                    }
+                }, editingUser.documentId ?? "")
+                getMembersData();
+                setEditingUser(null);
+            } else {
+                const response = await dashboardApiClient.addMember({
+                    data: {
+                        full_name: formData.full_name,
+                        email: formData.email,
+                        phone_number: formData.phone_number,
+                        membership_type: formData.membership_type,
+                        start_date: formData.start_date,
+                        end_date: formData.end_date,
+                    }
+                })
+                const newUser: Member = {
+                    ...formData,
+                    membership_status: "active",
+                    membership_type: formData.membership_type
+                };
+                setUsers([newUser, ...users]);
+            }
+
+            setFormData({
+                full_name: "",
+                email: "",
+                phone_number: "",
                 membership_status: "active",
+                start_date: new Date().toISOString().split("T")[0],
+                end_date: "",
                 membership_type: "monthly"
-            };
-            setUsers([newUser, ...users]);
+            });
+            setShowForm(false);
+        } catch (error: any) {
+            console.log(error)
+        } finally {
+            setIsPageLoading(false);
         }
 
-        setFormData({
-            full_name: "",
-            email: "",
-            phone_number: "",
-            membership_status: "active",
-            start_date: new Date().toISOString().split("T")[0],
-            end_date: "",
-            membership_type: "monthly"
-        });
-        setShowForm(false);
+
     };
 
     const handleEditUser = (user: Member) => {
@@ -105,20 +137,28 @@ export default function UserManagement() {
         setShowForm(true);
     };
 
-    const confirmDeleteUser = (id: number) => {
-        setDeletingUserId(id);
+    const confirmDeleteUser = (documentId: string) => {
+        setDeletingUserId(documentId);
         setIsConfirmOpen(true);
     };
 
-    const closeConfirmDialog = () => {
-        setDeletingUserId(null);
+    const closeConfirmDialog = async () => {
+        setDeletingUserId("");
         setIsConfirmOpen(false);
     };
 
-    const handleDeleteUser = () => {
+    const handleDeleteUser = async () => {
         if (deletingUserId !== null) {
-            setUsers(users.filter((u) => u.id !== deletingUserId));
-            closeConfirmDialog();
+            setIsPageLoading(true)
+            try {
+                const response = await dashboardApiClient.deleteMember(deletingUserId);
+                setUsers(users.filter((u) => u?.documentId !== deletingUserId));
+                closeConfirmDialog();
+            } catch (err: any) {
+
+            } finally {
+                setIsPageLoading(false);
+            }
         }
     };
 
@@ -164,30 +204,34 @@ export default function UserManagement() {
     const getMembershipStyle = (membership: Member["membership_type"]) => {
         switch (membership) {
             case "monthly":
-                return { bg: "rgba(239,75,110,0.2)", color: "#ef4b6e" };
+                return { bg: "#ef4b6e", color: "white" };
             case "quarterly":
-                return { bg: "rgba(37,99,235,0.2)", color: "blue.300" };
+                return { bg: "gray.700", color: "white" };
             case "yearly":
             default:
-                return { bg: "rgba(31,41,55,0.2)", color: "gray.300" };
+                return { bg: "green.600", color: "white" };
         }
     };
 
     const getMembersData = async () => {
+        setIsPageLoading(true);
         try {
             const response = await dashboardApiClient.getMembers(currentPage, rowsPerPage);
             setUsers(response.data)
         } catch (error: any) {
             console.log(error)
+        } finally {
+            setIsPageLoading(false);
         }
     }
 
     useEffect(() => {
         getMembersData();
-    }, [rowsPerPage])
+    }, [rowsPerPage, currentPage])
 
     return (
         <Box w="100%" py={{ base: 4, md: 6 }}>
+            {isPageLoading && <Loader />}
             <VStack gap={6} align="stretch">
                 {/* PAGE HEADER */}
                 <Box>
@@ -363,13 +407,13 @@ export default function UserManagement() {
                                             _focus={{ borderColor: "#ef4b6e" }}
                                         >
                                             <option style={{ backgroundColor: "#020617" }} value="monthly">
-                                                monthly
+                                                Monthly
                                             </option>
                                             <option style={{ backgroundColor: "#020617" }} value="quarterly">
-                                                quarterly
+                                                Quarterly
                                             </option>
                                             <option style={{ backgroundColor: "#020617" }} value="yearly">
-                                                yearly
+                                                Yearly
                                             </option>
                                         </Select>
                                     </Box>
@@ -456,7 +500,7 @@ export default function UserManagement() {
                                         const statusStyle = getStatusStyle(user.membership_status);
                                         return (
                                             <Box
-                                                key={user.id}
+                                                key={user.documentId}
                                                 bg="rgba(15,23,42,0.6)"
                                                 border="1px solid"
                                                 borderColor="rgba(148,163,184,0.3)"
@@ -485,7 +529,7 @@ export default function UserManagement() {
                                                                 size="xs"
                                                                 color="#ef4b6e"
                                                                 _hover={{ color: "#ff6b88", bg: "transparent" }}
-                                                                onClick={() => confirmDeleteUser(user.id)}
+                                                                onClick={() => confirmDeleteUser(user.documentId ?? "")}
                                                             >
                                                                 <Trash2 size={15} />
                                                             </Button>
@@ -513,8 +557,9 @@ export default function UserManagement() {
                                                                 rounded="full"
                                                                 bg={memStyle.bg}
                                                                 color={memStyle.color}
+                                                                fontWeight={"bold"}
                                                             >
-                                                                {user.membership_type}
+                                                                {user.membership_type?.toUpperCase()}
                                                             </Badge>
                                                         </Flex>
                                                         <Flex justify="space-between">
@@ -571,7 +616,7 @@ export default function UserManagement() {
                                         const statusStyle = getStatusStyle(user.membership_status);
                                         return (
                                             <Tr
-                                                key={user.id}
+                                                key={user.documentId}
                                                 _hover={{ bg: "rgba(15,23,42,0.95)" }}
                                                 borderColor="rgba(148,163,184,0.25)"
                                                 borderTop={"1px solid #ef4b6e"}
@@ -601,8 +646,9 @@ export default function UserManagement() {
                                                         rounded="full"
                                                         bg={memStyle.bg}
                                                         color={memStyle.color}
+                                                        fontWeight={"bold"}
                                                     >
-                                                        {user.membership_type}
+                                                        {user.membership_type?.toUpperCase()}
                                                     </Badge>
                                                 </Td>
                                                 <Td color="gray.300" fontSize="sm" whiteSpace="nowrap">
@@ -639,7 +685,7 @@ export default function UserManagement() {
                                                             size="xs"
                                                             color="#ef4b6e"
                                                             _hover={{ color: "#ff6b88", bg: "transparent" }}
-                                                            onClick={() => confirmDeleteUser(user.id)}
+                                                            onClick={() => confirmDeleteUser(user.documentId ?? "")}
                                                         >
                                                             <Trash2 size={15} />
                                                         </Button>

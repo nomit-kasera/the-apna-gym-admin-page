@@ -5,21 +5,17 @@ type State = {
   name: string;
   email: string;
   isAuthenticated: boolean;
-  profilePic: string;
   token: string;
   isVerified: boolean;
   accountStatus: string;
   user_id: string,
-  role: string
 };
 
 type Action = {
   setUserProfile: (
     name: string,
     email: string,
-    profilePic: string,
     user_id: string,
-    role: string,
   ) => void;
   setToken: (token: string) => void;
   setAuthenticated: (val: boolean) => void;
@@ -36,20 +32,15 @@ export const userStore = createStore<State & Action>()((set) => ({
   isVerified: false,
   isAuthenticated: false,
   user_id: "",
-  role: "",
   setUserProfile: (
     name: string,
     email: string,
-    profilePic: string,
     user_id: string,
-    role: string
   ) =>
     set(() => ({
       name,
       email,
-      profilePic,
       user_id,
-      role
     })),
   setToken: (token) =>
     set(() => ({
@@ -63,12 +54,10 @@ export const userStore = createStore<State & Action>()((set) => ({
     set(() => ({
       name: "",
       email: "",
-      profilePic: "",
       accountStatus: "",
       token: "",
       isAuthenticated: false,
       user_id: "",
-      role: ""
     })),
 }));
 

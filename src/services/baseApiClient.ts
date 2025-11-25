@@ -6,7 +6,7 @@ import { userStore } from "@/stores/useUserStore";
 const ENDPOINT =
   process.env.NODE_ENV === "development"
     ? "http://localhost:1337"
-    : "https://api.arcadezone.fun";
+    : "https://elegant-bubble-93f708d80f.strapiapp.com";
 
 interface BaseApiClientProps {
   baseURL?: string;

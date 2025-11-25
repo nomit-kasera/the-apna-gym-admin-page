@@ -2,9 +2,11 @@
 
 import LoginPage from "@/Module/Login"
 import { useState } from "react"
-import Dashboard from "./dashboard"
+import Dashboard from "./dashboard/home"
+import { Box } from "@chakra-ui/react"
+import withAuth from "@/Components/Auth/withAuth"
 
-export default function Home() {
+function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [adminName, setAdminName] = useState("")
 
@@ -19,12 +21,10 @@ export default function Home() {
   }
 
   return (
-    <div>
-      {isAuthenticated ? (
-        <Dashboard adminName={adminName} onLogout={handleLogout} />
-      ) : (
-        <LoginPage onLogin={handleLogin} />
-      )}
-    </div>
+    <Box>
+      <Dashboard adminName={adminName} onLogout={handleLogout} />
+    </Box>
   )
 }
+
+export default withAuth(Home)

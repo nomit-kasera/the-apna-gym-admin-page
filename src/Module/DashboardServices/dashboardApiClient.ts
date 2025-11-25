@@ -1,14 +1,14 @@
 import { ApiEndpoints } from "@/constant/endPoints";
 import { BaseApiClient } from "@/services/baseApiClient";
+import { getProfileFromStorage } from "@/utils/AuthUtils";
 import { getErrorMessageFromAxios } from "@/utils/getErrorMessage";
-
 
 export type ValidateTokenBody = {
     token: string;
 };
 
 export type LoginBody = {
-    email: string;
+    identifier: string;
     password: string;
 };
 
@@ -21,15 +21,20 @@ export interface UserDetails {
 }
 
 export interface LoginResponse {
-    status: string;
-    user_id: string;
-    details: UserDetails;
-    token: string;
-    role: string;
+    jwt: string,
+    user: {
+        id: number,
+        documentId: string,
+        username: string,
+        email: string,
+        createdAt: string,
+        updatedAt: string,
+    }
 }
 
 export interface Member {
-    id: number;
+    id?: number;
+    documentId?: string;
     full_name: string;
     phone_number: string;
     email: string;
@@ -57,6 +62,38 @@ export interface MembersApiResponse {
     };
 }
 
+interface AddUpdateMemberBody {
+    data: {
+        full_name: string,
+        phone_number: string,
+        email: string,
+        membership_type: "monthly" | "quarterly" | "yearly";
+        start_date: string,
+        end_date: string,
+        is_active?: boolean
+    }
+}
+
+export interface StatsResponse {
+    totalMembers: number;
+    activeMembers: number;
+    monthlyRevenue: number;
+    expiringByMonth: Record<string, number>;
+    membershipBreakdown: {
+        monthly: number,
+        quarterly: number,
+        yearly: number
+    }
+}
+
+export interface LatestRegistration {
+    id: number;
+    full_name: string;
+    membership_type: "monthly" | "quarterly" | "yearly";
+    createdAt: string; // ISO date string
+}
+
+export type LatestRegistrationsResponse = LatestRegistration[];
 
 
 export class ApiClient extends BaseApiClient {
@@ -65,14 +102,14 @@ export class ApiClient extends BaseApiClient {
     }
 
 
-    async validateToken(body: ValidateTokenBody) {
+
+    async validateToken(token: string) {
+        const profileData = getProfileFromStorage();
         try {
-            const resp = await this.apiCall({
-                type: "POST",
+            const resp = await this.secureApiCall({
+                type: "GET",
                 url: ApiEndpoints.auth.validateToken,
-                body: {
-                    token: body.token,
-                },
+                token: token
             });
             return resp.data.is_valid;
         } catch (err: any) {
@@ -96,9 +133,71 @@ export class ApiClient extends BaseApiClient {
 
     async getMembers(page: number = 1, limit: number = 10): Promise<MembersApiResponse> {
         try {
-            const resp = await this.apiCall({
+            const resp = await this.secureApiCall({
                 type: "GET",
                 url: ApiEndpoints.members.get.membersData(page, limit),
+            });
+            return resp.data;
+        } catch (err: any) {
+            return Promise.reject(getErrorMessageFromAxios(err));
+        }
+    }
+
+    async updateMember(body: AddUpdateMemberBody, memberId: string): Promise<MembersApiResponse> {
+        try {
+            const resp = await this.secureApiCall({
+                type: "PUT",
+                url: ApiEndpoints.members.put.updateMember(memberId),
+                body
+            });
+            return resp.data;
+        } catch (err: any) {
+            return Promise.reject(getErrorMessageFromAxios(err));
+        }
+    }
+
+    async deleteMember(memberId: string): Promise<MembersApiResponse> {
+        try {
+            const resp = await this.secureApiCall({
+                type: "DELETE",
+                url: ApiEndpoints.members.delete.deleteMember(memberId)
+            });
+            return resp.data;
+        } catch (err: any) {
+            return Promise.reject(getErrorMessageFromAxios(err));
+        }
+    }
+
+    async addMember(body: AddUpdateMemberBody): Promise<MembersApiResponse> {
+        try {
+            const resp = await this.secureApiCall({
+                type: "POST",
+                url: ApiEndpoints.members.post.addMemebr,
+                body
+            });
+            return resp.data;
+        } catch (err: any) {
+            return Promise.reject(getErrorMessageFromAxios(err));
+        }
+    }
+
+    async getStats(): Promise<StatsResponse> {
+        try {
+            const resp = await this.apiCall({
+                type: "GET",
+                url: ApiEndpoints.dashboadr.get.stats,
+            });
+            return resp.data;
+        } catch (err: any) {
+            return Promise.reject(getErrorMessageFromAxios(err));
+        }
+    }
+
+    async getLatestRegistation(): Promise<LatestRegistration[]> {
+        try {
+            const resp = await this.apiCall({
+                type: "GET",
+                url: ApiEndpoints.dashboadr.get.latestRegistartion,
             });
             return resp.data;
         } catch (err: any) {

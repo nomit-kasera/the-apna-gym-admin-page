@@ -2,17 +2,26 @@
 
 import React, { useState } from "react";
 import { Box, Flex, Heading, Text, Input, Button, VStack, Image } from "@chakra-ui/react";
+import { dashboardApiClient } from "../DashboardServices/dashboardApiClient";
+import useUserStore from "@/stores/useUserStore"
+import { useToast } from "@chakra-ui/toast";
+import * as AuthUtils from "@/utils/AuthUtils";
+import { useRouter } from "next/router";
+import { Paths } from "@/constant/paths";
+import Loader from "@/Components/Loader";
 
-interface LoginPageProps {
-    onLogin: (name: string) => void;
-}
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const toast = useToast();
+    const { setAuthenticated, setToken, setUserProfile } = useUserStore();
+    const router = useRouter();
+    const [isPageLoading, setIsPageLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
@@ -26,18 +35,71 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             return;
         }
 
-        const adminName = email.split("@")[0];
-        onLogin(adminName);
+
+
+        try {
+            setIsPageLoading(true);
+            const { ref: referredFrom } = router.query;
+            const response = await dashboardApiClient.login({
+                identifier: email,
+                password: password,
+            });
+
+            const profileObject: AuthUtils.ProfileObject = {
+                name: response.user.username,
+                email: response.user.email,
+                token: response.jwt,
+                user_id: response.user.documentId,
+            };
+            setUserProfile(
+                profileObject.name,
+                profileObject.email,
+                profileObject.user_id,
+            );
+            setToken(profileObject.token);
+            setAuthenticated(true);
+
+            // set state
+            const status = AuthUtils.setProfileInStorage(profileObject);
+
+            if (!status) {
+                throw new Error("Something went wrong!");
+            }
+
+            if (referredFrom) {
+                router.push(referredFrom as string);
+                return;
+            }
+            toast({
+                title: "Success",
+                description: "Login successful",
+                status: "success",
+                duration: 4000
+            });
+            router.push(`${Paths.home}`);
+        } catch (err: any) {
+            setIsPageLoading(false)
+            toast({
+                title: "Auth Error",
+                description: err.message,
+                status: "error",
+                duration: 4000,
+                isClosable: true,
+            });
+        } finally {
+            setIsPageLoading(false)
+        }
     };
 
     return (
         <Flex align="center" justify="center" minH="100vh" px={4} bgGradient="linear(to-br, black, black, gray.900)">
+            {isPageLoading && <Loader />}
             <Box
                 maxW="md"
                 w="full"
                 bg="blackAlpha.600"
                 border="1px solid"
-                borderColor="brand.500"
+                borderColor="primary"
                 backdropFilter="blur(10px)"
                 borderRadius="lg"
                 p={6}
@@ -55,8 +117,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                             />
                         </Box>
 
-                        <Heading fontSize="3xl" fontWeight="bold" color="brand.400">
-                            APNA GYM
+                        <Heading fontSize="3xl" fontWeight="bold" color="primary">
+                            THE APNA GYM
                         </Heading>
 
                         <Text color="gray.300">Admin Dashboard Login</Text>
@@ -78,9 +140,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                                 onChange={(e) => setEmail(e.target.value)}
                                 bg="gray.800"
                                 color="white"
-                                borderColor="brand.500"
+                                borderColor="primary"
                                 _placeholder={{ color: "gray.500" }}
-                                _focus={{ borderColor: "brand.400" }}
+                                _focus={{ borderColor: "primary" }}
                             />
                         </Box>
                         {error && (!email || !email.includes("@")) && (
@@ -101,9 +163,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                                 onChange={(e) => setPassword(e.target.value)}
                                 bg="gray.800"
                                 color="white"
-                                borderColor="brand.500"
+                                borderColor="primary"
                                 _placeholder={{ color: "gray.500" }}
-                                _focus={{ borderColor: "brand.400" }}
+                                _focus={{ borderColor: "primary" }}
                             />
                         </Box>
                         {error && !password && (
@@ -116,9 +178,9 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                         <Button
                             type="submit"
                             w="full"
-                            bg="brand.400"
+                            bg="primary"
                             color="white"
-                            _hover={{ bg: "brand.500" }}
+                            _hover={{ bg: "primary" }}
                             py={6}
                             fontWeight="bold"
                         >
@@ -128,7 +190,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                 </Box>
 
                 <Text mt={4} textAlign="center" fontSize="xs" color="gray.400">
-                    Demo: Use any email and password to login
+                    Enter email and password to access dashboard
                 </Text>
             </Box>
         </Flex>

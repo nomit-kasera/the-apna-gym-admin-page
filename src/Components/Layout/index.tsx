@@ -3,29 +3,31 @@
 import React, { useState } from "react";
 import { Box, Flex, Text, Button, VStack, HStack, IconButton, Icon, Image } from "@chakra-ui/react";
 import { Menu, LogOut, BarChart3, Users, X } from "lucide-react";
+import { useRouter } from "next/router";
+import useUserStore from "@/stores/useUserStore";
+import * as AuthUtils from "@/utils/AuthUtils";
+import { Paths } from "@/constant/paths";
 
 interface LayoutProps {
   children: React.ReactNode;
-  adminName: string;
-  onLogout: () => void;
-  activeTab: "overview" | "users";
-  onTabChange: (tab: "overview" | "users") => void;
   pageTitle: string;
 }
 
 export default function Layout({
   children,
-  adminName,
-  onLogout,
-  activeTab,
-  onTabChange,
   pageTitle,
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
+  const router = useRouter();
   const openMobileSidebar = () => setIsMobileSidebarOpen(true);
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+  const { name, reset } = useUserStore();
+
+  const handleSignOut = () => {
+    AuthUtils.signOut();
+    reset();
+  };
 
   const SidebarContent = (isMobileView = false) => (
     <Box
@@ -61,21 +63,21 @@ export default function Layout({
         <NavItem
           icon={<BarChart3 size={20} />}
           label="Dashboard"
-          active={activeTab === "overview"}
+          active={router.asPath.includes('home')}
           onClick={() => {
-            onTabChange("overview");
             closeMobileSidebar();
+            router.push(Paths.home);
           }}
           sidebarOpen={sidebarOpen}
         />
 
         <NavItem
           icon={<Users size={20} />}
-          label="Users"
-          active={activeTab === "users"}
+          label="Members"
+          active={router.asPath.includes('members')}
           onClick={() => {
-            onTabChange("users");
             closeMobileSidebar();
+            router.push(Paths.members);
           }}
           sidebarOpen={sidebarOpen}
         />
@@ -157,7 +159,7 @@ export default function Layout({
           <IconButton
             aria-label="menu"
             display={{ base: "flex", md: "none" }}
-            onClick={() => {openMobileSidebar(), setSidebarOpen(true)}}
+            onClick={() => { openMobileSidebar(), setSidebarOpen(true) }}
             color="primary"
             variant="ghost"
           >
@@ -177,7 +179,7 @@ export default function Layout({
             <Text color="gray.300">
               Welcome,{" "}
               <Text as="span" color="primary" fontWeight="semibold">
-                {adminName}
+                {name}
               </Text>
             </Text>
 
@@ -185,7 +187,7 @@ export default function Layout({
               variant="ghost"
               color="gray.400"
               _hover={{ color: "primary" }}
-              onClick={onLogout}
+              onClick={handleSignOut}
               size="sm"
               display="flex"
               alignItems="center"
@@ -232,7 +234,7 @@ function NavItem({ icon, label, active, onClick, sidebarOpen }: NavItemProps) {
       color={active ? "white" : "gray.400"}
       _hover={{
         bg: active ? "primary" : "gray.900",
-        color: "primary",
+        color: active ? "gray.900" : "primary",
       }}
       rounded="lg"
       px={sidebarOpen ? 4 : 0}
