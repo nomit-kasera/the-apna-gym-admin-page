@@ -72,7 +72,7 @@ export default function LoginPage() {
             router.push(`${Paths.home}`);
         } catch (err: any) {
             setIsPageLoading(false)
-            toast.error("Login failed");
+            toast.error(err.message || "Login failed");
         } finally {
             setIsPageLoading(false)
         }
@@ -98,7 +98,8 @@ export default function LoginPage() {
                             <Image
                                 src="/logo.jpeg"
                                 alt="Apna Gym Logo"
-                                boxSize={60}
+                                width={["100px", "150px", "180px"]}
+                                height={"auto"}
                                 style={{ filter: "drop-shadow(0 0 8px rgba(239,75,110,0.4))" }}
                                 rounded={"full"}
                             />

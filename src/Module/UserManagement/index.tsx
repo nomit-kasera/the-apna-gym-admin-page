@@ -64,7 +64,9 @@ export default function UserManagement() {
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.full_name || !formData.email || !formData.phone_number || !formData.end_date) {
+        if (!formData.full_name || !formData.email || !formData.phone_number || !formData.end_date
+            || !formData.start_date || !formData.membership_type
+        ) {
             alert("Please fill in all fields");
             return;
         }
@@ -423,7 +425,7 @@ export default function UserManagement() {
 
                                     <Box>
                                         <Text fontSize="sm" fontWeight="medium" color="gray.200" mb={2}>
-                                            Join Date
+                                            Join Date *
                                         </Text>
                                         <Input
                                             type="date"
@@ -765,7 +767,7 @@ export default function UserManagement() {
                                     justify={{ base: "center", md: "flex-end" }}
                                 >
                                     <Button
-                                        size="sm"
+                                        size={["xs", "sm"]}
                                         variant="outline"
                                         borderColor="rgba(148,163,184,0.6)"
                                         color="gray.300"
@@ -777,7 +779,7 @@ export default function UserManagement() {
                                         <Text display={{ base: "block", sm: "none" }}>⇤</Text>
                                     </Button>
                                     <Button
-                                        size="sm"
+                                        size={["xs", "sm"]}
                                         variant="outline"
                                         borderColor="rgba(148,163,184,0.6)"
                                         color="gray.300"
@@ -794,7 +796,7 @@ export default function UserManagement() {
                                     </Text>
 
                                     <Button
-                                        size="sm"
+                                        size={["xs", "sm"]}
                                         variant="outline"
                                         borderColor="rgba(148,163,184,0.6)"
                                         color="gray.300"
@@ -806,7 +808,7 @@ export default function UserManagement() {
                                         <Text display={{ base: "block", sm: "none" }}>→</Text>
                                     </Button>
                                     <Button
-                                        size="sm"
+                                        size={["xs", "sm"]}
                                         variant="outline"
                                         borderColor="rgba(148,163,184,0.6)"
                                         color="gray.300"

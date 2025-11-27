@@ -16,7 +16,8 @@ export const ApiEndpoints = Object.freeze({
     dashboadr: {
         get: {
             stats: "/api/member/stats",
-            latestRegistartion: "/api/members/latest"
+            latestRegistartion: "/api/members/latest",
+            searchByPhone: (phone:number) => `/api/member/search?phone=${phone}`
         }
     },
     auth: {
