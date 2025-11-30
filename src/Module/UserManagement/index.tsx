@@ -50,7 +50,7 @@ export default function UserManagement() {
         full_name: "",
         email: "",
         phone_number: "",
-        membership_type: "monthly" as "monthly" | "quarterly" | "yearly",
+        membership_type: "monthly" as "monthly" | "quarterly" | "half yearly" | "yearly",
         start_date: "",
         end_date: "",
         membership_status: "active"
@@ -212,6 +212,8 @@ export default function UserManagement() {
                 return { bg: "#ef4b6e", color: "white" };
             case "quarterly":
                 return { bg: "gray.700", color: "white" };
+            case "half yearly":
+                return { bg: "yellow.700", color: "white" };
             case "yearly":
             default:
                 return { bg: "green.600", color: "white" };
@@ -406,6 +408,9 @@ export default function UserManagement() {
                                                 })
                                             }
                                             bg="rgba(15,23,42,0.9)"
+                                            border={"1px solid"}
+                                            borderRadius={"5px"}
+                                            height={"40px"}
                                             borderColor="rgba(148,163,184,0.4)"
                                             color="white"
                                             _hover={{ borderColor: "#ef4b6e" }}
@@ -416,6 +421,9 @@ export default function UserManagement() {
                                             </option>
                                             <option style={{ backgroundColor: "#020617" }} value="quarterly">
                                                 Quarterly
+                                            </option>
+                                            <option style={{ backgroundColor: "#020617" }} value="half yearly">
+                                                Half Yearly
                                             </option>
                                             <option style={{ backgroundColor: "#020617" }} value="yearly">
                                                 Yearly
@@ -837,7 +845,7 @@ export default function UserManagement() {
                     borderRadius={8}
                     padding={10}
                     top={300}
-                    // left={500}
+                // left={500}
                 >
                     <ModalHeader>
                         <Flex align="center" gap={2} color="white">

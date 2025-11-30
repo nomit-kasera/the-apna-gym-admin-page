@@ -38,7 +38,7 @@ export interface Member {
     full_name: string;
     phone_number: string;
     email: string;
-    membership_type: "monthly" | "quarterly" | "yearly";
+    membership_type: "monthly" | "quarterly" | "half yearly" | "yearly";
     start_date: string;        // ISO date format
     end_date: string;          // ISO date format
     is_active?: boolean;
@@ -67,7 +67,7 @@ interface AddUpdateMemberBody {
         full_name: string,
         phone_number: string,
         email: string,
-        membership_type: "monthly" | "quarterly" | "yearly";
+        membership_type: "monthly" | "quarterly" | "half yearly" | "yearly";
         start_date: string,
         end_date: string,
         is_active?: boolean
@@ -83,13 +83,14 @@ export interface StatsResponse {
         monthly: number,
         quarterly: number,
         yearly: number
+        halfyearly: number
     }
 }
 
 export interface LatestRegistration {
     id: number;
     full_name: string;
-    membership_type: "monthly" | "quarterly" | "yearly";
+    membership_type: "monthly" | "quarterly" | "half yearly" | "yearly";
     createdAt: string; // ISO date string
 }
 

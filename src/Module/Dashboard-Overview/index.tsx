@@ -16,6 +16,7 @@ interface StatsResponse {
     monthly: number;
     quarterly: number;
     yearly: number;
+    halfyearly: number
   };
 }
 
@@ -117,6 +118,12 @@ export default function DashboardOverview() {
         color: "blue.500",
       },
       {
+        name: "Half Yearly",
+        count: statsData.membershipBreakdown.halfyearly,
+        percentage: total ? (statsData.membershipBreakdown.halfyearly / total) * 100 : 0,
+        color: "yellow.700",
+      },
+      {
         name: "Yearly",
         count: statsData.membershipBreakdown.yearly,
         percentage: total ? (statsData.membershipBreakdown.yearly / total) * 100 : 0,
@@ -204,8 +211,8 @@ export default function DashboardOverview() {
                   px={2}
                   py={1}
                   rounded="md"
-                  bg={user.membership_type === "monthly" ? "primary" : user.membership_type === "yearly" ? "green.600" : "gray.700"}
-                  color={user.membership_type === "quarterly" ? "white" : "gray.300"}
+                  bg={user.membership_type === "monthly" ? "primary" : user.membership_type === "yearly" ? "green.600" : user.membership_type === 'half yearly' ? "yellow.700" : "gray.700"}
+                  color={user.membership_type === "quarterly" ? "white" : "white"}
                   alignSelf={"center"}
                   fontWeight={"bold"}
                 >
