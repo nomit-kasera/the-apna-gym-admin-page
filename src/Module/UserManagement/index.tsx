@@ -23,6 +23,7 @@ import { Select } from "@chakra-ui/select";
 import { dashboardApiClient, Member } from "../DashboardServices/dashboardApiClient";
 import Loader from "@/Components/Loader";
 import { toast } from "react-toastify";
+import members from "@/pages/dashboard/members";
 
 const tableColumns = [
     "Name",
@@ -231,6 +232,17 @@ export default function UserManagement() {
             setIsPageLoading(false);
         }
     }
+
+    const getMembershipStatus = (endDate: string) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const expiry = new Date(endDate);
+        expiry.setHours(0, 0, 0, 0);
+
+        return expiry >= today ? "Active" : "Expired";
+    };
+
 
     useEffect(() => {
         getMembersData();
@@ -510,7 +522,11 @@ export default function UserManagement() {
                                 <VStack gap={4} align="stretch">
                                     {paginatedUsers.map((user) => {
                                         const memStyle = getMembershipStyle(user.membership_type);
-                                        const statusStyle = getStatusStyle(user.membership_status);
+                                        const status = getMembershipStatus(user.end_date);
+
+                                        const statusStyle = status === "Active"
+                                            ? { bg: "green.500", color: "white" }
+                                            : { bg: "red.500", color: "white" };
                                         return (
                                             <Box
                                                 key={user.documentId}
@@ -593,7 +609,7 @@ export default function UserManagement() {
                                                                 bg={statusStyle.bg}
                                                                 color={statusStyle.color}
                                                             >
-                                                                {user.membership_status}
+                                                                {status}
                                                             </Badge>
                                                         </Flex>
                                                     </VStack>
@@ -626,7 +642,11 @@ export default function UserManagement() {
                                 <Tbody>
                                     {paginatedUsers.map((user) => {
                                         const memStyle = getMembershipStyle(user.membership_type);
-                                        const statusStyle = getStatusStyle(user.membership_status);
+                                        const status = getMembershipStatus(user.end_date);
+
+                                        const statusStyle = status === "Active"
+                                            ? { bg: "green.500", color: "white" }
+                                            : { bg: "red.500", color: "white" };
                                         return (
                                             <Tr
                                                 key={user.documentId}
@@ -671,6 +691,7 @@ export default function UserManagement() {
                                                     {user.end_date}
                                                 </Td>
                                                 <Td>
+
                                                     <Badge
                                                         fontSize="xs"
                                                         px={2.5}
@@ -679,8 +700,9 @@ export default function UserManagement() {
                                                         bg={statusStyle.bg}
                                                         color={statusStyle.color}
                                                     >
-                                                        {user.membership_status}
+                                                        {status}
                                                     </Badge>
+
                                                 </Td>
                                                 <Td>
                                                     <HStack gap={1.5}>
