@@ -79,7 +79,7 @@ export default function UserManagement() {
                 const response = await dashboardApiClient.updateMember({
                     data: {
                         full_name: formData.full_name,
-                        email: formData.email,
+                        email: formData.email || null,
                         phone_number: formData.phone_number,
                         membership_type: formData.membership_type,
                         start_date: formData.start_date,
@@ -93,7 +93,7 @@ export default function UserManagement() {
                 const response = await dashboardApiClient.addMember({
                     data: {
                         full_name: formData.full_name,
-                        email: formData.email,
+                        email: formData.email || null,
                         phone_number: formData.phone_number,
                         membership_type: formData.membership_type,
                         start_date: formData.start_date,
@@ -107,6 +107,7 @@ export default function UserManagement() {
                 };
                 toast.success("User added successfully!");
                 setUsers([newUser, ...users]);
+                getMembersData();
             }
 
             setFormData({
@@ -119,8 +120,8 @@ export default function UserManagement() {
                 membership_type: "monthly"
             });
             setShowForm(false);
-        } catch (error: any) {
-            toast.error(error);
+        } catch (Error: any) {
+            toast.error("" + Error);
         } finally {
             setIsPageLoading(false);
         }
@@ -243,6 +244,31 @@ export default function UserManagement() {
         return expiry >= today ? "Active" : "Expired";
     };
 
+    const calculateEndDate = (start: string, type: string) => {
+        if (!start) return "";
+
+        const startDate = new Date(start);
+        const newDate = new Date(startDate);
+
+        switch (type) {
+            case "monthly":
+                newDate.setMonth(startDate.getMonth() + 1);
+                break;
+            case "quarterly":
+                newDate.setMonth(startDate.getMonth() + 3);
+                break;
+            case "half yearly":
+                newDate.setMonth(startDate.getMonth() + 6);
+                break;
+            case "yearly":
+                newDate.setFullYear(startDate.getFullYear() + 1);
+                break;
+        }
+
+        return newDate.toISOString().split("T")[0];
+    };
+
+
 
     useEffect(() => {
         getMembersData();
@@ -304,13 +330,15 @@ export default function UserManagement() {
                             <Button
                                 onClick={() => {
                                     setEditingUser(null);
+                                    const today = new Date().toISOString().split("T")[0];
+                                    const endDate = calculateEndDate(today, "monthly");
                                     setFormData({
                                         full_name: "",
                                         email: "",
                                         phone_number: "",
                                         membership_status: "active",
                                         start_date: new Date().toISOString().split("T")[0],
-                                        end_date: "",
+                                        end_date: endDate,
                                         membership_type: "monthly"
                                     });
                                     setShowForm((prev) => !prev);
@@ -413,12 +441,16 @@ export default function UserManagement() {
                                         <Select
                                             width={"100%"}
                                             value={formData.membership_type}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const type = e.target.value as any;
+                                                const newEndDate = calculateEndDate(formData.start_date, type);
+
                                                 setFormData({
                                                     ...formData,
-                                                    membership_type: e.target.value as "monthly" | "quarterly" | "yearly",
-                                                })
-                                            }
+                                                    membership_type: type,
+                                                    end_date: newEndDate,
+                                                });
+                                            }}
                                             bg="rgba(15,23,42,0.9)"
                                             border={"1px solid"}
                                             borderRadius={"5px"}
@@ -450,7 +482,12 @@ export default function UserManagement() {
                                         <Input
                                             type="date"
                                             value={formData.start_date}
-                                            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                                            onChange={(e) => {
+                                                const newStart = e.target.value;
+                                                const newEnd = calculateEndDate(newStart, formData.membership_type);
+
+                                                setFormData({ ...formData, start_date: newStart, end_date: newEnd });
+                                            }}
                                             bg="rgba(15,23,42,0.9)"
                                             borderColor="rgba(148,163,184,0.4)"
                                             color="white"
@@ -593,11 +630,11 @@ export default function UserManagement() {
                                                         </Flex>
                                                         <Flex justify="space-between">
                                                             <Text color="gray.400" fontSize="xs">Join Date:</Text>
-                                                            <Text color="gray.300" fontSize="xs">{user.start_date}</Text>
+                                                            <Text color="gray.300" fontSize="xs">{new Date(user.start_date)?.toDateString()}</Text>
                                                         </Flex>
                                                         <Flex justify="space-between">
                                                             <Text color="gray.400" fontSize="xs">Expiry Date:</Text>
-                                                            <Text color="gray.300" fontSize="xs">{user.end_date}</Text>
+                                                            <Text color="gray.300" fontSize="xs">{new Date(user.end_date)?.toDateString()}</Text>
                                                         </Flex>
                                                         <Flex justify="space-between">
                                                             <Text color="gray.400" fontSize="xs">Status:</Text>
@@ -685,10 +722,10 @@ export default function UserManagement() {
                                                     </Badge>
                                                 </Td>
                                                 <Td color="gray.300" fontSize="sm" whiteSpace="nowrap">
-                                                    {user.start_date}
+                                                    {new Date(user.start_date)?.toDateString()}
                                                 </Td>
                                                 <Td color="gray.300" fontSize="sm" whiteSpace="nowrap">
-                                                    {user.end_date}
+                                                    {new Date(user.end_date)?.toDateString()}
                                                 </Td>
                                                 <Td>
 

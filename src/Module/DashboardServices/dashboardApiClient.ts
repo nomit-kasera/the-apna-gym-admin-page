@@ -66,7 +66,7 @@ interface AddUpdateMemberBody {
     data: {
         full_name: string,
         phone_number: string,
-        email: string,
+        email: string | null,
         membership_type: "monthly" | "quarterly" | "half yearly" | "yearly";
         start_date: string,
         end_date: string,
