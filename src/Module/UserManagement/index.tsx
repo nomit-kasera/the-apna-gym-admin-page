@@ -65,7 +65,7 @@ export default function UserManagement() {
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.full_name || !formData.email || !formData.phone_number || !formData.end_date
+        if (!formData.full_name || !formData.phone_number || !formData.end_date
             || !formData.start_date || !formData.membership_type
         ) {
             alert("Please fill in all fields");
@@ -372,7 +372,7 @@ export default function UserManagement() {
 
                                     <Box>
                                         <Text fontSize="sm" fontWeight="medium" color="gray.200" mb={2}>
-                                            Email *
+                                            Email
                                         </Text>
                                         <Input
                                             type="email"
