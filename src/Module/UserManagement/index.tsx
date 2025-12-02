@@ -120,7 +120,7 @@ export default function UserManagement() {
             });
             setShowForm(false);
         } catch (error: any) {
-            console.log(error)
+            toast.error(error);
         } finally {
             setIsPageLoading(false);
         }
