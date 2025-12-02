@@ -771,7 +771,7 @@ export default function UserManagement() {
                         </Box>
 
                         {filteredUsers.length === 0 && (
-                            <Box textAlign="center" py={8}>
+                            <Box display={{ base: "none", lg: "block" }} textAlign="center" py={8}>
                                 <Text color="gray.400" fontSize="sm">
                                     No members found matching your search.
                                 </Text>
@@ -895,29 +895,30 @@ export default function UserManagement() {
 
             {/* Delete Confirmation Modal */}
             <Modal isOpen={isConfirmOpen} onClose={closeConfirmDialog}>
-                <ModalOverlay bg="blackAlpha.700" sx={{ backdropFilter: "blur(6px)" }} />
+                <ModalOverlay bg="blackAlpha.700" sx={{ backdropFilter: "blur(6px)" }}/>
                 <ModalContent
                     bg="rgba(15,23,42,0.98)"
                     borderWidth="1px"
                     borderColor="#ef4b6e"
-                    width={["100%"]}
+                    width={["100%", "100%"]}
                     borderRadius={8}
-                    padding={10}
+                    padding={"10px"}
                     top={300}
+                    // left={["25%", "25%"]}
                 // left={500}
                 >
                     <ModalHeader>
-                        <Flex align="center" gap={2} color="white">
+                        <Flex align="center" gap={2} color="white" pb={"10px"}>
                             <Trash2 size={20} color="#ef4b6e" />
                             <Text>Delete Member</Text>
                         </Flex>
                     </ModalHeader>
-                    <ModalBody>
+                    <ModalBody pb={"10px"}>
                         <Text color="gray.300" fontSize="sm">
                             Are you sure you want to delete this member? This action cannot be undone.
                         </Text>
                     </ModalBody>
-                    <ModalFooter gap={3} flexWrap="wrap">
+                    <ModalFooter gap={3} flexWrap="wrap" pt={"20px"}>
                         <Button
                             flex={{ base: "1 1 100%", sm: "1" }}
                             bg="#ef4b6e"
